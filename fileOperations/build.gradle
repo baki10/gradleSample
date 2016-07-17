@@ -1,0 +1,56 @@
+task copyMyPoems(type: Copy) {
+    from 'text-files'
+    into 'build/poems'
+    exclude '**/*.docx'
+}
+
+task complexCopy(type: Copy) {
+    from('src/main/templates') {
+        include '**/*.xml'
+        into 'templates'
+    }
+    from('i18n')
+    from('config') {
+        exclude 'Development*.groovy'
+        into 'config'
+    }
+    into 'build/resources'
+}
+
+task rename(type: Copy) {
+    from 'source'
+    into 'build/rename'
+    rename { fileName ->
+        "production-file${(fileName - 'file-template')}"
+    }
+}
+
+task copyProductionConfig(type: Copy) {
+    from 'source'
+    include 'config.properties'
+    into 'build/war/WEB-INF/config'
+    expand([
+            databaseHostname: 'db.company.com',
+            version         : '1.6',
+            buildNumber     : (int) (Math.random() * 1000),
+            date            : new Date()
+    ])
+}
+
+import java.security.MessageDigest;
+
+task copyAndHash(type: Copy) {
+    MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+
+    into 'build/deploy'
+    from 'source'
+    eachFile { fileCopyDeatails ->
+        sha1.digest(fileCopyDeatails.file.bytes)
+    }
+
+    doLast {
+        Formatter hexHash = new Formatter();
+        sha1.digest().each { b -> hexHash.format('%02x', b) }
+        println hexHash
+    }
+}
