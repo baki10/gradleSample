@@ -54,3 +54,7 @@ task copyAndHash(type: Copy) {
         println hexHash
     }
 }
+
+def xmlFilesOnly = fileTree('src/main/java') {
+    include '**/*.xml'
+}
